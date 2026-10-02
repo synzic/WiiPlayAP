@@ -41,7 +41,7 @@ class Missionsanity(Choice):
     option_tanks = 1
     option_both = 2
     option_none = 3
-    default = 2
+    default = 3
 
 class TanksMissionsanity(Range):
     """If Tanks! Missionsanity is enabled, which Tanks! mission should be the highest mission that has checks?"""
