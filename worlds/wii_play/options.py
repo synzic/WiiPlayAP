@@ -102,4 +102,4 @@ class WiiPlayOptions(PerGameCommonOptions):
     foulsanity: Foulsanity
     starting_games: StartingGames
 
-
+    start_inventory_from_pool: StartInventoryPool

@@ -15,15 +15,15 @@ class ItemData(NamedTuple):
 base_id = 0
 
 progressive_games = {
-	"Shooting Range Unlock": ItemData(base_id + 1, IC.progression|IC.useful),
-	"Find Mii Unlock": ItemData(base_id + 2, IC.progression|IC.useful),
-	"Table Tennis Unlock": ItemData(base_id + 3, IC.progression|IC.useful),
-    "Pose Mii Unlock": ItemData(base_id + 4, IC.progression|IC.useful),
-    "Laser Hockey Unlock": ItemData(base_id + 5, IC.progression|IC.useful),
-    "Billiards Unlock": ItemData(base_id + 6, IC.progression|IC.useful),
-    "Fishing Unlock": ItemData(base_id + 7, IC.progression|IC.useful),
-    "Charge! Unlock": ItemData(base_id + 8, IC.progression|IC.useful),
-    "Tanks! Unlock": ItemData(base_id + 9, IC.progression|IC.useful),
+    "Shooting Range": ItemData(base_id + 1, IC.progression|IC.useful),
+    "Find Mii": ItemData(base_id + 2, IC.progression|IC.useful),
+    "Table Tennis": ItemData(base_id + 3, IC.progression|IC.useful),
+    "Pose Mii": ItemData(base_id + 4, IC.progression|IC.useful),
+    "Laser Hockey": ItemData(base_id + 5, IC.progression|IC.useful),
+    "Billiards": ItemData(base_id + 6, IC.progression|IC.useful),
+    "Fishing": ItemData(base_id + 7, IC.progression|IC.useful),
+    "Charge!": ItemData(base_id + 8, IC.progression|IC.useful),
+    "Tanks!": ItemData(base_id + 9, IC.progression|IC.useful),
 }
 
 find_mii_upgrades = {

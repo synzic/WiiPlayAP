@@ -19,21 +19,24 @@ def set_completion_condition(world: "WiiPlayWorld") -> None:
 
 def set_all_entrance_rules(world: "WiiPlayWorld") -> None:
     # each minigame only needs its own item to get into it
-    game_to_unlock_item = {
-        "Shooting Range": "Shooting Range Unlock",
-        "Find Mii":       "Find Mii Unlock",
-        "Table Tennis":   "Table Tennis Unlock",
-        "Pose Mii":       "Pose Mii Unlock",
-        "Laser Hockey":   "Laser Hockey Unlock",
-        "Billiards":      "Billiards Unlock",
-        "Fishing":        "Fishing Unlock",
-        "Charge!":        "Charge! Unlock",
-        "Tanks!":         "Tanks! Unlock",
-    }
+    # game_to_unlock_item = {
+    #     "Shooting Range": "Shooting Range Unlock",
+    #     "Find Mii":       "Find Mii Unlock",
+    #     "Table Tennis":   "Table Tennis Unlock",
+    #     "Pose Mii":       "Pose Mii Unlock",
+    #     "Laser Hockey":   "Laser Hockey Unlock",
+    #     "Billiards":      "Billiards Unlock",
+    #     "Fishing":        "Fishing Unlock",
+    #     "Charge!":        "Charge! Unlock",
+    #     "Tanks!":         "Tanks! Unlock",
+    # }
 
-    for region_name, unlock_item in game_to_unlock_item.items():
-        entrance = world.get_entrance(f"Main Menu -> {region_name}")
-        world.set_rule(entrance, Has(unlock_item))
+    games = ("Shooting Range", "Find Mii", "Table Tennis", "Pose Mii",
+             "Laser Hockey", "Billiards", "Fishing", "Charge!", "Tanks!")
+
+    for game in games:
+        entrance = world.get_entrance(f"Main Menu -> {game}")
+        world.set_rule(entrance, Has(game))
 
 def set_all_location_rules(world: "WiiPlayWorld") -> None:
     # All of the Wii Play checks are in logic once you get into the region.
@@ -58,4 +61,4 @@ def set_goal_rules(world: "WiiPlayWorld") -> None:
         world.set_rule(victory_location, HasFromListUnique(*all_unlock_items, count=games_needed))
 
     elif world.options.goal_type == GoalType.option_tanks_100:
-        world.set_rule(victory_location, Has("Tanks! Unlock"))
+        world.set_rule(victory_location, Has("Tanks!"))

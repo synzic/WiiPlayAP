@@ -171,9 +171,9 @@ class DolphinClient:
         result = self.dme.read_float(address)
         return result
 
-    def read_string(self, address: int) -> str:
+    def read_string(self, address: int, size: int) -> str:
         self._assert_hooked()
-        byte = self.dme.read_bytes(address, 5)
+        byte = self.dme.read_bytes(address, size)
         # Decode and strip out the invisible null bytes
         decoded = byte.decode("utf-8", errors="ignore").rstrip('\x00')
         return decoded
@@ -216,7 +216,7 @@ class DolphinClient:
 
         match data_type.lower().strip():
             case "string":
-                return self.read_string(resolved_addr)
+                return self.read_string(resolved_addr, length)
             case "byte":
                 return self.read_byte(resolved_addr)
             case "bytes":

@@ -6,6 +6,10 @@ class GameState:
                                        #        3=Pose Mii, 4=Laser Hockey, 5=Billiards,
                                        #        6=Fishing, 7=Charge!, 8=Tanks!
 
+    # For both, 0 = Not in state, 1 = In state
+    pause_state = 0x804F0E60 # Word | Also counts menu state as paused
+    menu_state = 0x80B20604 # Word | ONLY Menu state
+
 class HighScores:
     shooting_range = 0x80842b58  # Word
     find_mii       = 0x80842b6c  # Word
@@ -64,6 +68,7 @@ class FishingAddresses:
     total_caught      = 0x91b6b0b4   # Word
     game_state        = 0x91b6b12c   # Word | 0=before start, 2=fishing, 3=caught, 4=ending
     last_fish_name_length = 0x920c803f  # Byte | see fish-length table below
+    last_fish_name = 0x920caaf9  # 30 bytes ASCII
 """
 Current Length of Fish Name
 0x07=Nibbler
@@ -73,4 +78,3 @@ Current Length of Fish Name
 0x0e=Plain Ol' Fish
 0x10=King of the Pond
 """
-    last_fish_name    = 0x920caaf9   # 30 bytes ASCII
