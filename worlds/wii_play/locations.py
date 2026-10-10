@@ -98,10 +98,10 @@ billiards_locations = {
 }
 
 billiards_foulsanity_locations = {
-    "Billiards - The cue ball fell into the pocket.": LocData(base_id + 651),
-    "Billiards - The cue ball failed to hit the target ball first.": LocData(base_id + 652),
-    "Billiards - The cue ball missed the target ball.": LocData(base_id + 653),
-    "Billiards - You shot a ball off the table.": LocData(base_id + 654),
+    "Billiards - Your 1st Foul": LocData(base_id + 651),
+    "Billiards - Natural Fouler! (3 Fouls)": LocData(base_id + 652),
+    "Billiards - Ooh, it's not looking good. (6 Fouls)": LocData(base_id + 653),
+    "Billiards - How do you do it? (10 Fouls)": LocData(base_id + 654),
 }
 
 charge_locations = {
