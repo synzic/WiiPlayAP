@@ -59,10 +59,7 @@ class Fishsanity(Toggle):
     display_name = "Fishsanity"
 
 class Foulsanity(Toggle):
-    """Adds checks for each type of foul in Billiards.
-
-    (WARNING: These fouls will make you lose points, and make it harder to collect medals.)
-    """
+    """Adds checks for committing fouls in Billards"""
     display_name = "Foulsanity"
 
 class StartingGames(Range):
