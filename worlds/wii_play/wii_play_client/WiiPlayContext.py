@@ -663,7 +663,7 @@ class WiiPlayContext(SuperContext):
             return True
         return False
 
-    async def process_queue(self, queue, apply_fn) -> None: # NEW
+    async def process_queue(self, queue, apply_fn) -> None:
         for entry in list(queue):
             index, name = entry
             if await apply_fn(name):
