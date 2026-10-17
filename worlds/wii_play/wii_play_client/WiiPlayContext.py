@@ -566,7 +566,7 @@ class WiiPlayContext(SuperContext):
                     ids.add(loc)
         await self.send_new_checks(ids)
 
-    async def check_goal(self) -> None: # NEW
+    async def check_goal(self) -> None:
         if self.goal_sent or self.goal is None:
             return
 
