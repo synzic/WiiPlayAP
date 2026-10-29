@@ -117,8 +117,8 @@ class DolphinClient:
 
         if decoded == "RHAE01":
             detected_version = "NTSC-U"
-        elif decoded == "RHAP01":
-            detected_version = "PAL"
+        #elif decoded == "RHAP01":
+            #detected_version = "PAL"
         else:
             GAME_VERSION = None
             self.told_region = False
