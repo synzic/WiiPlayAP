@@ -75,6 +75,7 @@ class WiiPlayWorld(World):
 
     options_dataclass = WiiPlayOptions
     options: WiiPlayOptions
+    starting_game_names: list[str]
 
     location_name_to_id = LOCATION_NAME_TO_ID
     item_name_to_id = ITEM_NAME_TO_ID
@@ -136,6 +137,8 @@ class WiiPlayWorld(World):
             "fishsanity": self.options.fishsanity.value,
             "foulsanity": self.options.foulsanity.value,
             "starting_games": self.options.starting_games.value,
+            "options": self.options.as_dict(*self.ut_generation_options),
+            "starting_game_names": self.starting_game_names,
         }
 
         return slot_data

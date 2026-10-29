@@ -72,11 +72,19 @@ def create_all_items(world:"WiiPlayWorld") -> None:
     itempool = []
 
     game_unlock_names = list(progressive_games.keys())
-    world.random.shuffle(game_unlock_names)
+    passthrough = getattr(world.multiworld, "re_gen_passthrough", {}).get(world.game, {})
 
-    starting_count = world.options.starting_games.value
-    starting_game_names = game_unlock_names[:starting_count]
-    remaining_game_names = game_unlock_names[starting_count:]
+    if "starting_game_names" in passthrough:
+        starting_game_names = list(passthrough["starting_game_names"])
+        remaining_game_names = [n for n in game_unlock_names if n not in starting_game_names]
+    else:
+        world.random.shuffle(game_unlock_names)
+        
+        starting_count = world.options.starting_games.value
+        starting_game_names = game_unlock_names[:starting_count]
+        remaining_game_names = game_unlock_names[starting_count:]
+
+    world.starting_game_names = starting_game_names
 
     for name in starting_game_names:
         starting_item = world.create_item(name)
@@ -86,21 +94,21 @@ def create_all_items(world:"WiiPlayWorld") -> None:
         new_item = world.create_item(name)
         itempool.append(new_item)
 
-    for item in find_mii_upgrades:
-        new_item = world.create_item(item)
-        itempool.append(new_item)
+    #for item in find_mii_upgrades:
+     #   new_item = world.create_item(item)
+      #  itempool.append(new_item)
 
-    for item in pose_mii_upgrades:
-        new_item = world.create_item(item)
-        itempool.append(new_item)
+    #for item in pose_mii_upgrades:
+     #   new_item = world.create_item(item)
+      #  itempool.append(new_item)
 
-    for item in fishing_upgrades:
-        new_item = world.create_item(item)
-        itempool.append(new_item)
+    #for item in fishing_upgrades:
+     #   new_item = world.create_item(item)
+      #  itempool.append(new_item)
 
-    for item in tanks_items:
-        new_item = world.create_item(item)
-        itempool.append(new_item)
+    #for item in tanks_items:
+     #   new_item = world.create_item(item)
+      #  itempool.append(new_item)
 
     for item in wiiplay_fillers:
         new_item = world.create_item(item)

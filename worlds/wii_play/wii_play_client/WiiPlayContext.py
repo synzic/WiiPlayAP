@@ -29,8 +29,8 @@ LOCATION_ID_TO_NAME = {loc_id: name for name, loc_id in LOCATION_NAME_TO_ID.item
 
 CONSUMABLE_STORAGE_CATEGORY = "wii_play_consumables"
 LOCATION_STORAGE_CATEGORY = "wii_play_locations"
-CLIENT_VERSION = "0.0.1"
-COMPATIBLE_VERSIONS = ()
+CLIENT_VERSION = "0.0.2"
+COMPATIBLE_VERSIONS = ("0.0.1",)
 
 GAMES = ("Shooting Range", "Find Mii", "Table Tennis", "Pose Mii",
          "Laser Hockey", "Billiards", "Fishing", "Charge!", "Tanks!")
@@ -593,7 +593,8 @@ class WiiPlayContext(SuperContext):
 
     async def check_tanks(self) -> None:
         client = self.game_interface.dolphin_client
-        if client.read_word(TanksAddresses.game_state) != 0x06:  # 0x06 Tank Won
+        state = client.read_word(TanksAddresses.game_state)
+        if state not in (0x06, 0x08): #0x06 tank won, 0x08 mission complete
             return
         mission = client.read_word(TanksAddresses.current_mission) + 1  # stored as mission - 1
         if not 1 <= mission <= 100:

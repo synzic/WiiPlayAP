@@ -1,6 +1,6 @@
 {
   "game": "Wii Play",
   "minimum_ap_version": "0.6.7",
-  "world_version": "0.0.1",
+  "world_version": "0.0.2",
   "authors": ["synzic", "ElectroStarz"]
 }
