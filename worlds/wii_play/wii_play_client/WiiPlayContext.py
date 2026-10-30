@@ -29,6 +29,7 @@ LOCATION_ID_TO_NAME = {loc_id: name for name, loc_id in LOCATION_NAME_TO_ID.item
 
 CONSUMABLE_STORAGE_CATEGORY = "wii_play_consumables"
 LOCATION_STORAGE_CATEGORY = "wii_play_locations"
+HIGH_SCORE_STORAGE_CATEGORY = "wii_play_high_scores" 
 CLIENT_VERSION = "0.0.2"
 COMPATIBLE_VERSIONS = ("0.0.1",)
 
@@ -135,6 +136,11 @@ class WiiPlayContext(SuperContext):
         self.tanks_100_cleared = False
         self.goal_sent = False
         self.last_error_message = None
+        self.saved_high_scores: dict[str, int] = {}
+        self._high_scores_load_event = asyncio.Event()
+        self.progress_restored = False
+        self.restore_warned = False
+        self.guest_warned = False
 
 
     def debug_log(self, message: str) -> None:
@@ -167,6 +173,9 @@ class WiiPlayContext(SuperContext):
 
     def clear_local_item_state(self):
         self.unlocked_games.clear()
+        self.progress_restored = False
+        self.saved_high_scores.clear()
+        self._high_scores_load_event.clear()
 
     def clear_local_location_state(self):
         self.checked_locations.clear()
@@ -195,6 +204,44 @@ class WiiPlayContext(SuperContext):
     # --- Consumable persistence (filler + traps) ---
     # These are one-shot items tracked by AP received-item index and saved to server storage
     # so reconnects don't hand them out again. Key is scoped per slot.
+
+    @property
+    def high_score_storage_key(self) -> Optional[str]:
+        """Returns a key which is linked to the game and the slot name"""
+
+        if self.seed is None or self.slot is None:
+            return None
+        return f"{HIGH_SCORE_STORAGE_CATEGORY}_{self.slot}"
+
+    async def load_high_scores(self)-> None:
+        key = self.high_score_storage_key
+        if key is None:
+            return
+        self._high_scores_load_event.clear()
+        await self.send_msgs([{"cmd": "Set", 
+                               "key": key, 
+                               "default": {}, 
+                               "want_reply": False,
+                               "operations": [{"operation": "default", "value": {}}]}])
+        self.set_notify(key)
+        await self.send_msgs([{"cmd": "Get",
+                               "keys": [key]}])
+        
+    def _on_high_scores_update(self, value: Any) -> None:
+        if isinstance(value, dict):
+            for game, score in value.items():
+                self.saved_high_scores[game] = max(self.saved_high_scores.get(game, 0), int(score))
+        self._high_scores_load_event.set()
+
+    async def save_high_scores(self) -> None:
+        key = self.high_score_storage_key
+        if key is None:
+            return
+        await self.send_msgs([{"cmd": "Set",
+                          "key": key,
+                          "default": {},
+                          "want_reply": False,
+                          "operations": [{"operation": "replace", "value": dict(self.saved_high_scores)}]}])
 
     @property
     def consumable_storage_key(self) -> Optional[str]:
@@ -356,9 +403,11 @@ class WiiPlayContext(SuperContext):
                 logger.info(f"Version check passed! (v{CLIENT_VERSION})")
 
             asyncio.create_task(self.load_handled_consumables(initialise=True))
+            asyncio.create_task(self.load_high_scores())
 
         elif cmd in ("Retrieved", "SetReply"):
             consumable_key = self.consumable_storage_key
+            score_key = self.high_score_storage_key
 
             if cmd == "Retrieved":
                 keys_dict = args.get("keys", {})
@@ -366,9 +415,15 @@ class WiiPlayContext(SuperContext):
                 if consumable_key and consumable_key in keys_dict:
                     self._on_consumables_storage_update(args["keys"][consumable_key])
 
+                if score_key and score_key in keys_dict:
+                    self._on_high_scores_update(keys_dict[score_key])
+
             elif cmd == "SetReply":
                 if consumable_key and args.get("key") == consumable_key:
                     self._on_consumables_storage_update(args.get("value"))
+
+                if score_key and args.get("key") == score_key:
+                    self._on_high_scores_update(args.get("value"))
 
         elif cmd == "ReceivedItems":
             asyncio.create_task(self._handle_received_items_consumables(args))
@@ -379,6 +434,7 @@ class WiiPlayContext(SuperContext):
         """Reset runtime-only state when the game process/title exits or restarts."""
         self.start_process = True
         self.game_session_active = game_active
+        self.progress_restored = False
 
     def ready_to_handle(self) -> bool:
         """Evaluates whether the game is ready to receive items that effect the player in game
@@ -518,12 +574,26 @@ class WiiPlayContext(SuperContext):
 
     async def handle_in_menu(self):
         await self.handle_unlocked_games()
+        if not await self.guest_check():
+            return
+        if not self.progress_restored:
+            if not await self.restore_progress():
+                return
         await self.check_medals()
+        await self.check_high_scores()
         await self.check_goal()
         await self.process_queue(self.filler_to_give, self.apply_filler)
 
     async def handle_in_game(self):
+        if not await self.guest_check():
+            return
+        if not self.progress_restored:
+            if not self.restore_warned:
+                logger.info("Progress will not be synced until you return to the main menu.")
+                self.restore_warned = True
+            return
         await self.check_medals()
+        await self.check_high_scores()
         if self.connection_state == ConnectionState.BILLIARDS:
             await self.check_fouls()
         elif self.connection_state == ConnectionState.TANKS:
@@ -670,3 +740,54 @@ class WiiPlayContext(SuperContext):
             if await apply_fn(name):
                 queue.remove(entry)
                 await self.mark_consumable_handled(index)
+
+    def using_guest_mii(self) -> bool:
+        client = self.game_interface.dolphin_client
+        single_player = client.read_word(RequiredAddreses.player_count_check) == 1
+        guest = 1 <= client.read_word(RequiredAddreses.last_selected_mii) <= 6
+        return single_player and guest
+
+    async def guest_check(self) -> bool:
+        if self.using_guest_mii():
+            self.guest_warned = False
+            return True
+        if not self.guest_warned:
+            logger.warning("Wii Play requires single player mode and a Guest Mii! Checks will not send until you switch.")
+            self.guest_warned = True
+        self.progress_restored = False
+        return False
+
+    def medal_levels_from_ap(self) -> dict[str, int]:
+        checked = self.checked_locations | self.locations_checked
+        levels = {}
+        for game in GAMES:
+            level = 0
+            for tier in range(1,5):
+                if MEDAL_LOCATION_IDS.get((game, tier)) in checked:
+                    level = tier
+            levels[game] = level
+        return levels
+
+    async def restore_progress(self) -> bool:
+        if not self._high_scores_load_event.is_set():
+            return False
+        client = self.game_interface.dolphin_client
+        levels = self.medal_levels_from_ap()
+        for game in GAMES:
+            attr = MEDAL_ATTR[game]
+            client.write_byte(getattr(Medals, attr), levels[game])
+            client.write_word(getattr(HighScores, attr), self.saved_high_scores.get(game, 0))
+        self.progress_restored = True
+        logger.info("Medals and high scores have been restored from Archipelago.")
+        return True
+
+    async def check_high_scores(self) -> None:
+        client = self.game_interface.dolphin_client
+        changed = False
+        for game in GAMES:
+            score = client.read_word(getattr(HighScores, MEDAL_ATTR[game]))
+            if score > self.saved_high_scores.get(game, 0):
+                self.saved_high_scores[game] = score
+                changed = True
+        if changed:
+            await self.save_high_scores()

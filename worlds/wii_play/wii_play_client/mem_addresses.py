@@ -55,6 +55,7 @@ class TanksAddresses:
     game_state      = 0x91d28020   # Word | 0x08=Mission Complete, 0x09=Mission Failed, etc.
     total_destroyed = 0x91d28100   # Word
     extra_lives     = 0x91d281fc   # Word
+    number_bullets_on_screen = 0x91d0efc0 # Word
 
 class ShootingRangeAddresses:
     level_completed_flag = 0x91e40de4  # Byte
@@ -78,9 +79,14 @@ class SleepyAddresses:
     menu_pose_1 = 0x91B4EB50
     menu_pose_2 = 0x91B4EB48
 
+class RequiredAddreses:
+    guest_mii = 0x80842b4f # 8 bit
+    last_selected_mii = 0x80842b14 # Word, 1-6 guests
+    player_count_check = 0x91b3bac4 # Word, 0x01 is 1 player, 0x00 is selecting, 0x02 is two player
+
 class FishingAddresses:
     score             = 0x91b6b09c   # Word
-    total_caught      = 0x91b6b0b4   # Word
+    total_fish_caught      = 0x91b6b0b4   # Word
     game_state        = 0x91b6b12c   # Word | 0=before start, 2=fishing, 3=caught, 4=ending
     last_fish_name_length = 0x920c803f  # Byte | see fish-length table below
     last_fish_name = 0x920caaf9  # 30 bytes ASCII
